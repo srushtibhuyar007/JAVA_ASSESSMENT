@@ -4,9 +4,10 @@ import com.challenge.api.model.DefaultEmployee;
 import com.challenge.api.model.Employee;
 import com.challenge.api.model.EmployeeRequest;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,23 +15,35 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class InMemoryEmployeeService implements EmployeeService {
 
-    private final List<Employee> employees = new ArrayList<>(List.of(createSeedEmployee()));
+    private final Map<UUID, Employee> employeesByUuid = new ConcurrentHashMap<>();
+
+    public InMemoryEmployeeService() {
+        Employee seedEmployee = createSeedEmployee();
+        employeesByUuid.put(seedEmployee.getUuid(), seedEmployee);
+    }
 
     @Override
     public List<Employee> getAllEmployees() {
-        return List.copyOf(employees);
+        return List.copyOf(employeesByUuid.values());
     }
 
     @Override
     public Employee getEmployeeByUuid(UUID uuid) {
-        return employees.stream()
-                .filter(employee -> uuid.equals(employee.getUuid()))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+        Employee employee = employeesByUuid.get(uuid);
+        if (employee == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found");
+        }
+        return employee;
     }
 
     @Override
     public Employee createEmployee(EmployeeRequest request) {
+        String email = request.getEmail();
+        if (email != null
+                && employeesByUuid.values().stream().anyMatch(employee -> email.equals(employee.getEmail()))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Employee with this email already exists");
+        }
+
         Employee employee = DefaultEmployee.builder()
                 .uuid(UUID.randomUUID())
                 .firstName(request.getFirstName())
@@ -39,11 +52,12 @@ public class InMemoryEmployeeService implements EmployeeService {
                 .salary(request.getSalary())
                 .age(request.getAge())
                 .jobTitle(request.getJobTitle())
-                .email(request.getEmail())
+                .email(email)
                 .contractHireDate(request.getContractHireDate())
                 .contractTerminationDate(request.getContractTerminationDate())
                 .build();
-        employees.add(employee);
+
+        employeesByUuid.put(employee.getUuid(), employee);
         return employee;
     }
 
