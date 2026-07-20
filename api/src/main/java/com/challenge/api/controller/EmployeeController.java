@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +36,6 @@ public class EmployeeController {
     @GetMapping
     public List<EmployeeResponse> getAllEmployees() {
         log.info("Fetching all employees");
-        return employees.stream().map(this::toResponse).toList();
         return employeeService.getAllEmployees().stream().map(this::toResponse).toList();
     }
 
@@ -47,14 +45,6 @@ public class EmployeeController {
     @GetMapping("/{uuid}")
     public EmployeeResponse getEmployeeByUuid(@PathVariable UUID uuid) {
         log.info("Fetching employee with uuid={}", uuid);
-        return employees.stream()
-                .filter(employee -> uuid.equals(employee.getUuid()))
-                .findFirst()
-                .map(this::toResponse)
-                .orElseThrow(() -> {
-                    log.warn("Employee not found for uuid={}", uuid);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found");
-                });
         return toResponse(employeeService.getEmployeeByUuid(uuid));
     }
 
@@ -63,14 +53,10 @@ public class EmployeeController {
      */
     @PostMapping
     public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeRequest requestBody) {
-    public ResponseEntity<EmployeeResponse> createEmployee(@RequestBody EmployeeRequest requestBody) {
         log.info("Creating employee from request for email={}", requestBody.getEmail());
-        Employee employee = toDomain(requestBody);
-        employee.setUuid(UUID.randomUUID());
-        employees.add(employee);
-        log.info("Created employee with uuid={}", employee.getUuid());
         Employee employee = employeeService.createEmployee(requestBody);
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(employee));
+        log.info("Created employee with uuid={}", employee.getUuid());
+        return ResponseEntity.status(201).body(toResponse(employee));
     }
 
     private EmployeeResponse toResponse(Employee employee) {

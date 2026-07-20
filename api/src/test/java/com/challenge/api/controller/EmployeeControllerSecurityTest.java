@@ -19,14 +19,13 @@ class EmployeeControllerSecurityTest {
 
     @Test
     void unauthenticatedRequestIsRejected() throws Exception {
-        mockMvc.perform(get("/api/v1/employee"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/employee")).andExpect(status().isUnauthorized());
     }
 
     @Test
     void authenticatedRequestIsAccepted() throws Exception {
         mockMvc.perform(get("/api/v1/employee")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("admin", "admin123")))
+                        .with(SecurityMockMvcRequestPostProcessors.httpBasic("admin", "admin123")))
                 .andExpect(status().isOk());
     }
 }
