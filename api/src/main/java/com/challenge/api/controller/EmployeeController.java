@@ -4,6 +4,7 @@ import com.challenge.api.model.Employee;
 import com.challenge.api.model.EmployeeRequest;
 import com.challenge.api.model.EmployeeResponse;
 import com.challenge.api.service.EmployeeService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -53,6 +54,7 @@ public class EmployeeController {
      * @return Newly created Employee
      */
     @PostMapping
+    public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeRequest requestBody) {
     public ResponseEntity<EmployeeResponse> createEmployee(@RequestBody EmployeeRequest requestBody) {
         Employee employee = employeeService.createEmployee(requestBody);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(employee));
