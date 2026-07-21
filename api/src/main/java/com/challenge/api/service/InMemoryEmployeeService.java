@@ -3,6 +3,7 @@ package com.challenge.api.service;
 import com.challenge.api.model.DefaultEmployee;
 import com.challenge.api.model.Employee;
 import com.challenge.api.model.EmployeeRequest;
+import com.challenge.api.util.UuidGenerator;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class InMemoryEmployeeService implements EmployeeService {
         }
 
         Employee employee = DefaultEmployee.builder()
-                .uuid(UUID.randomUUID())
+                .uuid(UuidGenerator.generate())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .fullName(request.getFullName())
