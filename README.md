@@ -86,7 +86,7 @@ The API is protected with Basic Authentication.
 ### Credentials
 - Username: admin
 - Password: admin123
-These values are configured in `application.yml`.
+{These values are configured in `application.yml`.}
  
 ### In Postman
 1. Open the request.
